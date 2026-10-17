@@ -1,84 +1,240 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#123b35">
-<meta name="description" content="نظام مبيعات ومخازن للمطاعم والكافيهات">
-<link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="styles.css">
-<title>MIZAQ POS | نقطة البيع</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نظام المبيعات</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f1f4f8;color:#172b4d}
+header{background:#102b50;color:white;padding:18px;text-align:center}
+nav{display:flex;gap:8px;padding:12px;background:white;flex-wrap:wrap}
+button{border:0;border-radius:7px;padding:11px;cursor:pointer;font-size:15px}
+nav button,.primary{background:#146cce;color:white}
+main{padding:16px;max-width:1100px;margin:auto}
+.panel{background:white;padding:16px;border-radius:12px;margin-bottom:15px}
+.layout{display:grid;grid-template-columns:1fr 320px;gap:15px}
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:10px}
+.product{background:#e8f1ff;color:#102b50;min-height:80px}
+input{padding:12px;border:1px solid #ccd3dd;border-radius:7px;width:100%;margin:5px 0 12px}
+label{display:block}
+table{width:100%;border-collapse:collapse}
+td,th{padding:10px;border-bottom:1px solid #ddd;text-align:right}
+.total{font-size:21px;font-weight:bold;margin:15px 0}
+.danger{background:#fce8e8;color:#a22}
+.success{background:#13794b;color:white;width:100%}
+.hidden{display:none}
+.muted{color:#667085}
+@media(max-width:700px){.layout{grid-template-columns:1fr}main{padding:9px}}
+</style>
 </head>
 <body>
-<header class="topbar">
-  <div><div class="brand">MIZAQ POS</div><div class="muted small">منصة مستقلة لإدارة المطاعم والكافيهات</div></div>
-  <div class="status"><span id="netDot" class="dot"></span><span id="netStatus">يعمل محلياً</span></div>
+<header>
+<h1>نظام المبيعات</h1>
+<p>إدارة المطاعم والكافيهات</p>
 </header>
-<nav class="tabs">
-  <button class="tab active" data-view="pos">نقطة البيع</button>
-  <button class="tab" data-view="sales">المبيعات</button>
-  <button class="tab" data-view="inventory">المخزون</button>
-  <button class="tab" data-view="settings">الإعدادات</button>
+
+<nav>
+<button onclick="showPage('sales')">شاشة البيع</button>
+<button onclick="showPage('manage')">إدارة الأصناف</button>
+<button onclick="showPage('reports')">تقارير المبيعات</button>
 </nav>
+
 <main>
-<section id="view-pos" class="view">
-  <div class="section-head"><div><h1>نقطة البيع</h1><p class="muted">اختر الأصناف ثم أكمل عملية البيع</p></div><span class="pill" id="branchLabel">الفرع الرئيسي</span></div>
-  <div class="pos-layout">
-    <div>
-      <div class="search-wrap"><input id="productSearch" placeholder="ابحث عن صنف..." aria-label="البحث عن صنف"></div>
-      <div id="products" class="product-grid"></div>
-    </div>
-    <aside class="cart panel">
-      <h2>الطلب الحالي</h2>
-      <div id="cartItems" class="cart-items"><p class="muted">لم تتم إضافة أصناف</p></div>
-      <div class="total-line"><span>الإجمالي</span><strong id="cartTotal">0 ج.س</strong></div>
-      <label class="field-label" for="paymentMethod">طريقة الدفع</label>
-      <select id="paymentMethod"><option>نقدي</option><option>تحويل بنكي</option><option>بطاقة</option><option>آجل</option></select>
-      <button id="checkoutBtn" class="primary full">تأكيد البيع</button>
-      <button id="clearCartBtn" class="secondary full">إفراغ الطلب</button>
-    </aside>
-  </div>
+<section id="sales">
+<div class="layout">
+<div class="panel">
+<h2>قائمة الأصناف</h2>
+<div id="products" class="products"></div>
+</div>
+<div class="panel">
+<h2>الطلب الحالي</h2>
+<div id="cart"></div>
+<div class="total">الإجمالي: <span id="total">0</span> ج.س</div>
+<button class="success" onclick="checkout()">إتمام البيع</button>
+<button class="danger" style="width:100%;margin-top:8px" onclick="clearCart()">إلغاء الطلب</button>
+<p id="message"></p>
+</div>
+</div>
 </section>
-<section id="view-sales" class="view hidden">
-  <div class="section-head"><div><h1>المبيعات</h1><p class="muted">الفواتير المسجلة على هذا الجهاز</p></div><button id="exportBtn" class="secondary">تصدير CSV</button></div>
-  <div class="stats">
-    <div class="stat panel"><span class="muted">عدد الفواتير</span><strong id="salesCount">0</strong></div>
-    <div class="stat panel"><span class="muted">إجمالي المبيعات</span><strong id="salesSum">0 ج.س</strong></div>
-  </div>
-  <div class="panel table-wrap"><table><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>طريقة الدفع</th><th>الإجمالي</th></tr></thead><tbody id="salesTable"></tbody></table></div>
+
+<section id="manage" class="hidden">
+<div class="panel">
+<h2>إضافة صنف جديد</h2>
+<label>اسم الصنف</label>
+<input id="pname" placeholder="مثال: شاورما دجاج">
+<label>السعر بالجنيه السوداني</label>
+<input id="pprice" type="number" min="0.01" step="0.01" placeholder="مثال: 12000">
+<button class="primary" onclick="addProduct()">حفظ الصنف</button>
+<p id="productMessage"></p>
+</div>
+<div class="panel">
+<h2>الأصناف المسجلة</h2>
+<div style="overflow-x:auto">
+<table>
+<thead><tr><th>الصنف</th><th>السعر</th><th>إجراء</th></tr></thead>
+<tbody id="productTable"></tbody>
+</table>
+</div>
+</div>
 </section>
-<section id="view-inventory" class="view hidden">
-  <div class="section-head"><div><h1>المخزون</h1><p class="muted">نسخة تجريبية: مخزون أصناف البيع فقط</p></div></div>
-  <div class="panel table-wrap"><table><thead><tr><th>الصنف</th><th>السعر</th><th>الرصيد</th><th>تعديل الرصيد</th></tr></thead><tbody id="inventoryTable"></tbody></table></div>
-  <div class="panel add-product">
-    <h2>إضافة صنف جديد</h2>
-    <div class="form-grid">
-      <label>اسم الصنف<input id="newName" placeholder="مثال: قهوة لاتيه"></label>
-      <label>السعر بالجنيه السوداني<input id="newPrice" type="number" min="0" placeholder="1500"></label>
-      <label>الرصيد الافتتاحي<input id="newStock" type="number" min="0" placeholder="20"></label>
-    </div>
-    <button id="addProductBtn" class="primary">إضافة الصنف</button>
-  </div>
-</section>
-<section id="view-settings" class="view hidden">
-  <div class="section-head"><div><h1>الإعدادات</h1><p class="muted">تعريف المنشأة والفرع في النسخة التجريبية</p></div></div>
-  <div class="panel settings-form">
-    <label>اسم المنشأة<input id="businessName" value="MIZAQ POS"></label>
-    <label>اسم الفرع<input id="branchName" value="الفرع الرئيسي"></label>
-    <label>اسم الموظف / الكاشير<input id="cashierName" value="الكاشير 1"></label>
-    <button id="saveSettingsBtn" class="primary">حفظ الإعدادات</button>
-  </div>
-  <div class="panel warning">
-    <h3>مهم قبل الاستخدام التجاري</h3>
-    <p>هذه نسخة أولية تحفظ البيانات على الجهاز نفسه. لا يوجد بعدُ تسجيل دخول حقيقي أو مزامنة سحابية أو إدارة مركزية للفروع. لا تستخدمها كسجل محاسبي رسمي قبل إضافة الخادم والنسخ الاحتياطي واختبارات الأمان.</p>
-  </div>
-  <div class="panel">
-    <h3>البيانات التجريبية</h3><p class="muted">يمكنك إعادة ضبط بيانات هذا المتصفح والبدء من جديد.</p>
-    <button id="resetBtn" class="danger">إعادة ضبط البيانات</button>
-  </div>
+
+<section id="reports" class="hidden">
+<div class="panel">
+<h2>تقرير المبيعات المحفوظة</h2>
+<p>عدد الفواتير: <strong id="count">0</strong></p>
+<p>إجمالي المبيعات: <strong id="revenue">0</strong> ج.س</p>
+<div id="salesList"></div>
+<p class="muted">هذه التقارير تخص بيانات هذا المتصفح والجهاز فقط.</p>
+</div>
 </section>
 </main>
-<div id="toast" class="toast" role="status"></div>
-<script src="app.js"></script>
+
+<script>
+const defaultProducts=[
+{id:1,name:"بيتزا",price:15000},
+{id:2,name:"برجر",price:10000},
+{id:3,name:"دجاج بروست",price:18000},
+{id:4,name:"بطاطس",price:5000},
+{id:5,name:"عصير",price:3000},
+{id:6,name:"قهوة",price:4000}
+];
+
+function load(key,fallback){
+try{
+const value=localStorage.getItem(key);
+return value===null?fallback:JSON.parse(value);
+}catch(e){return fallback}
+}
+let products=load("restaurant_products_v1",defaultProducts);
+let sales=load("restaurant_sales_v1",[]);
+let cart=[];
+
+function saveProducts(){
+localStorage.setItem("restaurant_products_v1",JSON.stringify(products));
+}
+function money(n){return Number(n).toLocaleString("en-US")}
+function safe(text){
+return String(text).replace(/[&<>"']/g,c=>({
+"&":"&amp;","<":"&lt;",">":"&gt;",
+'"':"&quot;","'":"&#39;"
+}[c]));
+}
+function showPage(page){
+["sales","manage","reports"].forEach(id=>{
+document.getElementById(id).classList.toggle("hidden",id!==page);
+});
+if(page==="manage")renderProductTable();
+if(page==="reports")renderReports();
+}
+function renderProducts(){
+document.getElementById("products").innerHTML=products.map(p=>
+`<button class="product" onclick="addItem(${p.id})">
+<strong>${safe(p.name)}</strong><br>${money(p.price)} ج.س
+</button>`).join("");
+}
+function addItem(id){
+const p=products.find(x=>x.id===id);
+if(!p)return;
+const item=cart.find(x=>x.id===id);
+if(item)item.qty++;
+else cart.push({...p,qty:1});
+renderCart();
+}
+function renderCart(){
+document.getElementById("cart").innerHTML=cart.length?
+cart.map(p=>`<div style="padding:9px 0;border-bottom:1px solid #ddd">
+${safe(p.name)} × ${p.qty}
+<button class="danger" onclick="removeItem(${p.id})">−</button>
+<strong>${money(p.price*p.qty)} ج.س</strong>
+</div>`).join(""):"لا توجد أصناف في الطلب";
+document.getElementById("total").textContent=money(
+cart.reduce((s,p)=>s+p.price*p.qty,0));
+}
+function removeItem(id){
+const p=cart.find(x=>x.id===id);
+if(p){p.qty--;if(p.qty<=0)cart=cart.filter(x=>x.id!==id)}
+renderCart();
+}
+function clearCart(){
+cart=[];
+renderCart();
+document.getElementById("message").textContent="";
+}
+function checkout(){
+if(!cart.length){
+document.getElementById("message").textContent="أضف صنفاً أولاً";
+return;
+}
+const total=cart.reduce((s,p)=>s+p.price*p.qty,0);
+sales.push({
+id:Date.now(),date:new Date().toLocaleString(),
+items:cart.map(p=>({...p})),total
+});
+localStorage.setItem("restaurant_sales_v1",JSON.stringify(sales));
+cart=[];
+renderCart();
+document.getElementById("message").textContent="تم حفظ الفاتورة على هذا الجهاز.";
+}
+function addProduct(){
+const name=document.getElementById("pname").value.trim();
+const price=Number(document.getElementById("pprice").value);
+if(!name||!Number.isFinite(price)||price<=0){
+document.getElementById("productMessage").textContent="أدخل اسماً وسعراً صحيحين.";
+return;
+}
+products.push({id:Date.now(),name,price});
+saveProducts();
+renderProducts();
+renderProductTable();
+document.getElementById("pname").value="";
+document.getElementById("pprice").value="";
+document.getElementById("productMessage").textContent="تم حفظ الصنف.";
+}
+function renderProductTable(){
+document.getElementById("productTable").innerHTML=products.map(p=>
+`<tr><td>${safe(p.name)}</td><td>${money(p.price)}</td>
+<td><button class="primary" onclick="editProduct(${p.id})">تعديل</button>
+<button class="danger" onclick="deleteProduct(${p.id})">حذف</button></td></tr>`
+).join("");
+}
+function editProduct(id){
+const p=products.find(x=>x.id===id);
+if(!p)return;
+const name=prompt("اسم الصنف:",p.name);
+if(name===null)return;
+const priceText=prompt("السعر الجديد:",p.price);
+if(priceText===null)return;
+const price=Number(priceText);
+if(!name.trim()||!Number.isFinite(price)||price<=0){
+alert("الاسم والسعر غير صحيحين.");
+return;
+}
+p.name=name.trim();
+p.price=price;
+saveProducts();
+renderProductTable();
+renderProducts();
+}
+function deleteProduct(id){
+if(!confirm("هل تريد حذف هذا الصنف؟"))return;
+products=products.filter(p=>p.id!==id);
+saveProducts();
+renderProductTable();
+renderProducts();
+}
+function renderReports(){
+document.getElementById("count").textContent=sales.length;
+document.getElementById("revenue").textContent=money(
+sales.reduce((s,x)=>s+x.total,0));
+document.getElementById("salesList").innerHTML=sales.slice().reverse().map(x=>
+`<div class="panel"><strong>فاتورة ${x.id}</strong><br>
+${safe(x.date)}<br>الإجمالي: ${money(x.total)} ج.س</div>`
+).join("")||"لا توجد مبيعات مسجلة.";
+}
+renderProducts();
+renderCart();
+</script>
 </body>
 </html>
