@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#123b35">
+<meta name="description" content="نظام مبيعات ومخازن للمطاعم والكافيهات">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="styles.css">
+<title>MIZAQ POS | نقطة البيع</title>
+</head>
+<body>
+<header class="topbar">
+  <div><div class="brand">MIZAQ POS</div><div class="muted small">منصة مستقلة لإدارة المطاعم والكافيهات</div></div>
+  <div class="status"><span id="netDot" class="dot"></span><span id="netStatus">يعمل محلياً</span></div>
+</header>
+<nav class="tabs">
+  <button class="tab active" data-view="pos">نقطة البيع</button>
+  <button class="tab" data-view="sales">المبيعات</button>
+  <button class="tab" data-view="inventory">المخزون</button>
+  <button class="tab" data-view="settings">الإعدادات</button>
+</nav>
+<main>
+<section id="view-pos" class="view">
+  <div class="section-head"><div><h1>نقطة البيع</h1><p class="muted">اختر الأصناف ثم أكمل عملية البيع</p></div><span class="pill" id="branchLabel">الفرع الرئيسي</span></div>
+  <div class="pos-layout">
+    <div>
+      <div class="search-wrap"><input id="productSearch" placeholder="ابحث عن صنف..." aria-label="البحث عن صنف"></div>
+      <div id="products" class="product-grid"></div>
+    </div>
+    <aside class="cart panel">
+      <h2>الطلب الحالي</h2>
+      <div id="cartItems" class="cart-items"><p class="muted">لم تتم إضافة أصناف</p></div>
+      <div class="total-line"><span>الإجمالي</span><strong id="cartTotal">0 ج.س</strong></div>
+      <label class="field-label" for="paymentMethod">طريقة الدفع</label>
+      <select id="paymentMethod"><option>نقدي</option><option>تحويل بنكي</option><option>بطاقة</option><option>آجل</option></select>
+      <button id="checkoutBtn" class="primary full">تأكيد البيع</button>
+      <button id="clearCartBtn" class="secondary full">إفراغ الطلب</button>
+    </aside>
+  </div>
+</section>
+<section id="view-sales" class="view hidden">
+  <div class="section-head"><div><h1>المبيعات</h1><p class="muted">الفواتير المسجلة على هذا الجهاز</p></div><button id="exportBtn" class="secondary">تصدير CSV</button></div>
+  <div class="stats">
+    <div class="stat panel"><span class="muted">عدد الفواتير</span><strong id="salesCount">0</strong></div>
+    <div class="stat panel"><span class="muted">إجمالي المبيعات</span><strong id="salesSum">0 ج.س</strong></div>
+  </div>
+  <div class="panel table-wrap"><table><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>طريقة الدفع</th><th>الإجمالي</th></tr></thead><tbody id="salesTable"></tbody></table></div>
+</section>
+<section id="view-inventory" class="view hidden">
+  <div class="section-head"><div><h1>المخزون</h1><p class="muted">نسخة تجريبية: مخزون أصناف البيع فقط</p></div></div>
+  <div class="panel table-wrap"><table><thead><tr><th>الصنف</th><th>السعر</th><th>الرصيد</th><th>تعديل الرصيد</th></tr></thead><tbody id="inventoryTable"></tbody></table></div>
+  <div class="panel add-product">
+    <h2>إضافة صنف جديد</h2>
+    <div class="form-grid">
+      <label>اسم الصنف<input id="newName" placeholder="مثال: قهوة لاتيه"></label>
+      <label>السعر بالجنيه السوداني<input id="newPrice" type="number" min="0" placeholder="1500"></label>
+      <label>الرصيد الافتتاحي<input id="newStock" type="number" min="0" placeholder="20"></label>
+    </div>
+    <button id="addProductBtn" class="primary">إضافة الصنف</button>
+  </div>
+</section>
+<section id="view-settings" class="view hidden">
+  <div class="section-head"><div><h1>الإعدادات</h1><p class="muted">تعريف المنشأة والفرع في النسخة التجريبية</p></div></div>
+  <div class="panel settings-form">
+    <label>اسم المنشأة<input id="businessName" value="MIZAQ POS"></label>
+    <label>اسم الفرع<input id="branchName" value="الفرع الرئيسي"></label>
+    <label>اسم الموظف / الكاشير<input id="cashierName" value="الكاشير 1"></label>
+    <button id="saveSettingsBtn" class="primary">حفظ الإعدادات</button>
+  </div>
+  <div class="panel warning">
+    <h3>مهم قبل الاستخدام التجاري</h3>
+    <p>هذه نسخة أولية تحفظ البيانات على الجهاز نفسه. لا يوجد بعدُ تسجيل دخول حقيقي أو مزامنة سحابية أو إدارة مركزية للفروع. لا تستخدمها كسجل محاسبي رسمي قبل إضافة الخادم والنسخ الاحتياطي واختبارات الأمان.</p>
+  </div>
+  <div class="panel">
+    <h3>البيانات التجريبية</h3><p class="muted">يمكنك إعادة ضبط بيانات هذا المتصفح والبدء من جديد.</p>
+    <button id="resetBtn" class="danger">إعادة ضبط البيانات</button>
+  </div>
+</section>
+</main>
+<div id="toast" class="toast" role="status"></div>
+<script src="app.js"></script>
+</body>
+</html>
