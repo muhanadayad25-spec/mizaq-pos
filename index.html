@@ -6,548 +6,753 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MIZAQ POS - نظام المبيعات</title>
 <style>
+:root{--blue:#174ea6;--dark:#172033;--bg:#f3f6fb;--green:#168653;--red:#c93636}
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f1f4f8;color:#172b4d}
-header{background:#102b50;color:white;padding:18px;text-align:center}
-header h1{margin:0 0 8px}
-nav{display:flex;gap:8px;padding:12px;background:white;flex-wrap:wrap}
-button{border:0;border-radius:7px;padding:11px;cursor:pointer;font-size:15px}
-nav button,.primary{background:#146cce;color:white}
-main{padding:16px;max-width:1100px;margin:auto}
-.panel{background:white;padding:16px;border-radius:12px;margin-bottom:15px;box-shadow:0 2px 8px #172b4d0a}
-.layout{display:grid;grid-template-columns:1fr 320px;gap:15px}
-.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:10px}
-.product{background:#e8f1ff;color:#102b50;min-height:80px}
-input,select{padding:12px;border:1px solid #ccd3dd;border-radius:7px;width:100%;margin:5px 0 12px;background:white}
-label{display:block}
-table{width:100%;border-collapse:collapse}
-td,th{padding:10px;border-bottom:1px solid #ddd;text-align:right;white-space:nowrap}
-.total{font-size:21px;font-weight:bold;margin:15px 0}
-.danger{background:#fce8e8;color:#a22}
-.success{background:#13794b;color:white;width:100%}
-.hidden{display:none}
-.muted{color:#667085}
-.low-stock{color:#b42318;font-weight:bold}
-.message{margin-top:10px}
-@media(max-width:700px){
- .layout{grid-template-columns:1fr}
- main{padding:9px}
- nav button{flex:1}
- .panel{padding:12px}
-}
+body{margin:0;font-family:Arial,Tahoma,sans-serif;background:var(--bg);color:var(--dark)}
+header{background:var(--dark);color:white;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+header h1{margin:0;font-size:24px}
+header small{color:#ccd7ed}
+nav{display:flex;gap:7px;padding:12px;background:white;flex-wrap:wrap;box-shadow:0 2px 8px #0001}
+button{cursor:pointer;border:0;border-radius:7px;padding:10px 14px;font-size:14px;font-weight:bold}
+nav button{background:#edf1f8;color:#25334c}
+nav button.active,.primary{background:var(--blue);color:white}
+button:disabled{opacity:.45;cursor:not-allowed}
+main{padding:18px;max-width:1250px;margin:auto}
+.page{display:none}.page.active{display:block}
+h2{font-size:21px;margin:5px 0 16px}
+h3{margin-top:0}
+.panel{background:white;border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 3px 12px #1720330b}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:15px}
+label{display:block;font-size:13px;font-weight:bold;margin-bottom:6px}
+input,select{width:100%;padding:11px;border:1px solid #d5dce8;border-radius:7px;font-size:15px;background:white}
+.field{margin-bottom:12px}
+.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+.row .field{flex:1;min-width:130px}
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px}
+.product-card{border:1px solid #dce3ef;border-radius:10px;padding:14px;text-align:center;background:#fff}
+.product-card strong{display:block;margin-bottom:10px}
+.price{color:var(--blue);font-weight:bold;margin-bottom:10px}
+.cart-line{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #e7ebf2;padding:10px 0}
+.cart-line button{padding:5px 9px;background:#edf1f8}
+.total{font-size:22px;font-weight:bold;margin:16px 0}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:11px 8px;text-align:right;border-bottom:1px solid #e5eaf2}
+th{background:#f3f6fb}
+.table-wrap{overflow-x:auto}
+.danger{background:#fff0f0;color:var(--red)}
+.success{background:#e8f8ef;color:#126b41}
+.muted{color:#6a768b;font-size:13px}
+.notice{padding:12px;border-radius:8px;background:#fff5d9;color:#72510a;margin:10px 0}
+.low{color:var(--red);font-weight:bold}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.stat{background:white;border-radius:10px;padding:17px;box-shadow:0 2px 8px #00000008}
+.stat span{display:block;color:#68758a;font-size:13px;margin-bottom:9px}
+.stat strong{font-size:23px}
+.inline-actions{display:flex;gap:5px;flex-wrap:wrap}
+.small-btn{padding:6px 9px;font-size:12px}
+footer{text-align:center;color:#8a95a8;padding:20px;font-size:12px}
+@media(max-width:600px){main{padding:10px}header{padding:15px}header h1{font-size:20px}nav button{flex:1}th,td{padding:9px 5px;font-size:12px}}
 </style>
 </head>
 <body>
 <header>
-<h1>MIZAQ POS</h1>
-<p>نظام إدارة مبيعات المطاعم والكافيهات</p>
+  <div>
+    <h1>MIZAQ POS</h1>
+    <small>نظام المبيعات والمخزون للمطاعم والكافيهات</small>
+  </div>
+  <div id="clock"></div>
 </header>
 
 <nav>
-<button onclick="showPage('sales')">شاشة البيع</button>
-<button onclick="showPage('manage')">إدارة الأصناف</button>
-<button onclick="showPage('inventory')">المخزون</button>
-<button onclick="showPage('reports')">تقارير المبيعات</button>
+  <button class="active" data-page="sales" onclick="showPage('sales',this)">المبيعات</button>
+  <button data-page="products" onclick="showPage('products',this)">المنتجات</button>
+  <button data-page="inventory" onclick="showPage('inventory',this)">المخزون</button>
+  <button data-page="recipes" onclick="showPage('recipes',this)">الوصفات</button>
+  <button data-page="reports" onclick="showPage('reports',this)">التقارير</button>
 </nav>
 
 <main>
-
-<!-- شاشة البيع -->
-<section id="sales">
-<div class="layout">
-<div class="panel">
-<h2>قائمة الأصناف</h2>
-<div id="products" class="products"></div>
-</div>
-
-<div class="panel">
-<h2>الطلب الحالي</h2>
-<div id="cart"></div>
-<div class="total">الإجمالي: <span id="total">0</span> ج.س</div>
-<button class="success" onclick="checkout()">إتمام البيع</button>
-<button class="danger" style="width:100%;margin-top:8px" onclick="clearCart()">إلغاء الطلب</button>
-<p id="message" class="message"></p>
-</div>
-</div>
+<section id="sales" class="page active">
+  <h2>شاشة المبيعات</h2>
+  <div id="saleNotice"></div>
+  <div class="grid">
+    <div class="panel">
+      <div class="field">
+        <label>البحث عن منتج</label>
+        <input id="productSearch" placeholder="اكتب اسم المنتج..." oninput="renderProductButtons()">
+      </div>
+      <div id="productButtons" class="product-grid"></div>
+    </div>
+    <div class="panel">
+      <h3>سلة البيع</h3>
+      <div id="cartLines"></div>
+      <div class="total">الإجمالي: <span id="cartTotal">0</span></div>
+      <button class="primary" style="width:100%" onclick="checkout()">إتمام البيع</button>
+      <button class="danger" style="width:100%;margin-top:8px" onclick="clearCart()">إفراغ السلة</button>
+      <p class="muted">يتم فحص الوصفات وتوفر المواد قبل خصم المخزون.</p>
+    </div>
+  </div>
 </section>
 
-<!-- إدارة الأصناف -->
-<section id="manage" class="hidden">
-<div class="panel">
-<h2>إضافة صنف جديد</h2>
-<label for="pname">اسم الصنف</label>
-<input id="pname" placeholder="مثال: شاورما دجاج">
-
-<label for="pprice">السعر بالجنيه السوداني</label>
-<input id="pprice" type="number" min="0.01" step="0.01" placeholder="مثال: 12000">
-
-<button class="primary" onclick="addProduct()">حفظ الصنف</button>
-<p id="productMessage" class="message"></p>
-</div>
-
-<div class="panel">
-<h2>الأصناف المسجلة</h2>
-<div style="overflow-x:auto">
-<table>
-<thead>
-<tr><th>الصنف</th><th>السعر</th><th>إجراء</th></tr>
-</thead>
-<tbody id="productTable"></tbody>
-</table>
-</div>
-</div>
+<section id="products" class="page">
+  <h2>إدارة المنتجات</h2>
+  <div class="panel">
+    <h3 id="productFormTitle">إضافة منتج جديد</h3>
+    <input type="hidden" id="editProductId">
+    <div class="row">
+      <div class="field"><label>اسم المنتج</label><input id="productName" placeholder="مثال: بيتزا"></div>
+      <div class="field"><label>سعر البيع</label><input id="productPrice" type="number" min="0" step="any" placeholder="السعر"></div>
+      <div class="field"><button class="primary" onclick="saveProduct()">حفظ المنتج</button>
+      <button onclick="resetProductForm()">إلغاء</button></div>
+    </div>
+  </div>
+  <div class="panel table-wrap">
+    <table><thead><tr><th>المنتج</th><th>السعر</th><th>الوصفة</th><th>الإجراءات</th></tr></thead>
+    <tbody id="productsTable"></tbody></table>
+  </div>
 </section>
 
-<!-- إدارة المخزون -->
-<section id="inventory" class="hidden">
-<div class="panel">
-<h2>إضافة مادة خام</h2>
-
-<label for="mname">اسم المادة</label>
-<input id="mname" placeholder="مثال: جبن موزاريلا">
-
-<label for="munit">وحدة القياس</label>
-<select id="munit">
-<option value="كجم">كيلوغرام</option>
-<option value="جرام">جرام</option>
-<option value="لتر">لتر</option>
-<option value="مل">ملليلتر</option>
-<option value="قطعة">قطعة</option>
-<option value="عبوة">عبوة</option>
-</select>
-
-<label for="mqty">الكمية الافتتاحية</label>
-<input id="mqty" type="number" min="0" step="0.001" value="0">
-
-<label for="mmin">حد التنبيه عند انخفاض المخزون</label>
-<input id="mmin" type="number" min="0" step="0.001" value="5">
-
-<button class="primary" onclick="addMaterial()">حفظ المادة</button>
-<p id="materialMessage" class="message"></p>
-</div>
-
-<div class="panel">
-<h2>المواد الخام المتوفرة</h2>
-<p class="muted">ستظهر علامة تنبيه عند وصول الكمية إلى حد التنبيه أو أقل منه.</p>
-<div style="overflow-x:auto">
-<table>
-<thead>
-<tr>
-<th>المادة</th>
-<th>الوحدة</th>
-<th>الكمية</th>
-<th>حد التنبيه</th>
-<th>الإجراءات</th>
-</tr>
-</thead>
-<tbody id="materialTable"></tbody>
-</table>
-</div>
-</div>
+<section id="inventory" class="page">
+  <h2>مخزون المواد الخام</h2>
+  <div class="stats">
+    <div class="stat"><span>عدد المواد</span><strong id="materialCount">0</strong></div>
+    <div class="stat"><span>مواد منخفضة المخزون</span><strong id="lowCount">0</strong></div>
+  </div>
+  <div id="inventoryNotice"></div>
+  <div class="panel">
+    <h3 id="materialFormTitle">إضافة مادة خام</h3>
+    <input type="hidden" id="editMaterialId">
+    <div class="row">
+      <div class="field"><label>اسم المادة</label><input id="materialName" placeholder="مثال: جبن"></div>
+      <div class="field"><label>وحدة القياس</label>
+        <select id="materialUnit">
+          <option value="kg">كيلوجرام (kg)</option>
+          <option value="g">جرام (g)</option>
+          <option value="L">لتر (L)</option>
+          <option value="ml">ملليلتر (ml)</option>
+          <option value="piece">قطعة</option>
+          <option value="pack">عبوة</option>
+        </select>
+      </div>
+      <div class="field"><label>الكمية الحالية</label><input id="materialQty" type="number" min="0" step="any" value="0"></div>
+      <div class="field"><label>حد التنبيه</label><input id="materialMin" type="number" min="0" step="any" value="0"></div>
+      <div class="field"><button class="primary" onclick="saveMaterial()">حفظ المادة</button>
+      <button onclick="resetMaterialForm()">إلغاء</button></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>إضافة كمية إلى المخزون</h3>
+    <div class="row">
+      <div class="field"><label>المادة</label><select id="receiveMaterial"></select></div>
+      <div class="field"><label>الكمية المستلمة</label><input id="receiveQty" type="number" min="0.000001" step="any" placeholder="الكمية"></div>
+      <div class="field"><button class="primary" onclick="receiveStock()">إضافة للمخزون</button></div>
+    </div>
+  </div>
+  <div class="panel table-wrap">
+    <table><thead><tr><th>المادة</th><th>الوحدة</th><th>الرصيد</th><th>حد التنبيه</th><th>الحالة</th><th>الإجراءات</th></tr></thead>
+    <tbody id="inventoryTable"></tbody></table>
+  </div>
 </section>
 
-<!-- تقارير المبيعات -->
-<section id="reports" class="hidden">
-<div class="panel">
-<h2>تقرير المبيعات المحفوظة</h2>
-<p>عدد الفواتير: <strong id="count">0</strong></p>
-<p>إجمالي المبيعات: <strong id="revenue">0</strong> ج.س</p>
-<div id="salesList"></div>
-<p class="muted">هذه التقارير تخص بيانات هذا المتصفح والجهاز فقط.</p>
-</div>
+<section id="recipes" class="page">
+  <h2>وصفات المنتجات</h2>
+  <div class="notice">أدخل كمية كل مادة مستخدمة في تحضير قطعة واحدة. يجب أن تكون وحدة الوصفة متوافقة مع وحدة المادة في المخزون. يمكنك استخدام التحويل التلقائي بين kg وg وبين L وml.</div>
+  <div class="panel">
+    <h3>اختيار المنتج</h3>
+    <div class="field"><label>المنتج</label><select id="recipeProduct" onchange="renderRecipeEditor()"></select></div>
+    <div id="recipeStatus"></div>
+    <div class="row">
+      <div class="field"><label>المادة الخام</label><select id="recipeMaterial"></select></div>
+      <div class="field"><label>الكمية لقطعة واحدة</label><input id="recipeQty" type="number" min="0.000001" step="any" placeholder="مثال: 200"></div>
+      <div class="field"><label>وحدة الكمية</label><select id="recipeUnit">
+        <option value="g">جرام (g)</option><option value="kg">كيلوجرام (kg)</option>
+        <option value="ml">ملليلتر (ml)</option><option value="L">لتر (L)</option>
+        <option value="piece">قطعة</option><option value="pack">عبوة</option>
+      </select></div>
+      <div class="field"><button class="primary" onclick="addRecipeItem()">إضافة للمكونات</button></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>مكونات الوصفة</h3>
+    <div id="recipeLines"></div>
+    <button class="primary" onclick="saveRecipe()">حفظ الوصفة</button>
+    <button class="danger" onclick="deleteRecipe()">حذف الوصفة</button>
+  </div>
 </section>
 
+<section id="reports" class="page">
+  <h2>تقارير المبيعات</h2>
+  <div class="stats">
+    <div class="stat"><span>عدد عمليات البيع</span><strong id="reportCount">0</strong></div>
+    <div class="stat"><span>إجمالي المبيعات</span><strong id="reportTotal">0</strong></div>
+    <div class="stat"><span>مبيعات اليوم</span><strong id="todayTotal">0</strong></div>
+  </div>
+  <div class="panel">
+    <div class="row">
+      <div class="field"><label>من تاريخ</label><input type="date" id="reportFrom" onchange="renderReports()"></div>
+      <div class="field"><label>إلى تاريخ</label><input type="date" id="reportTo" onchange="renderReports()"></div>
+      <div class="field"><button onclick="clearReportDates()">عرض كل العمليات</button></div>
+    </div>
+  </div>
+  <div class="panel table-wrap">
+    <table><thead><tr><th>رقم العملية</th><th>التاريخ</th><th>المنتجات</th><th>الإجمالي</th></tr></thead>
+    <tbody id="reportsTable"></tbody></table>
+  </div>
+</section>
 </main>
+
+<footer>MIZAQ POS — الإصدار المحلي للمبيعات والمخزون</footer>
 
 <script>
 "use strict";
 
-const defaultProducts = [
-{id:1,name:"بيتزا",price:15000},
-{id:2,name:"برجر",price:10000},
-{id:3,name:"دجاج بروست",price:18000},
-{id:4,name:"بطاطس",price:5000},
-{id:5,name:"عصير",price:3000},
-{id:6,name:"قهوة",price:4000}
-];
+/* مفاتيح التخزين الأصلية محفوظة دون تغيير */
+const KEYS = {
+  products: "restaurant_products_v1",
+  sales: "restaurant_sales_v1",
+  materials: "mizaq_raw_materials_v1",
+  recipes: "mizaq_recipes_v1"
+};
 
-function load(key,fallback){
-  try{
-    const value = localStorage.getItem(key);
-    return value === null ? fallback : JSON.parse(value);
-  }catch(e){
+function loadData(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw === null) return fallback;
+    const data = JSON.parse(raw);
+    return Array.isArray(data) ? data : fallback;
+  } catch (error) {
+    console.error("تعذر قراءة البيانات:", key, error);
     return fallback;
   }
 }
-
-let products = load("restaurant_products_v1",defaultProducts);
-let sales = load("restaurant_sales_v1",[]);
-let materials = load("mizaq_raw_materials_v1",[]);
-let cart = [];
-
-function saveProducts(){
-  localStorage.setItem("restaurant_products_v1",JSON.stringify(products));
+function saveData(key, data) {
+  localStorage.setItem(key, JSON.stringify(data));
 }
-
-function saveSales(){
-  localStorage.setItem("restaurant_sales_v1",JSON.stringify(sales));
+function makeId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
-
-function saveMaterials(){
-  localStorage.setItem("mizaq_raw_materials_v1",JSON.stringify(materials));
+function numberValue(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
 }
-
-function money(n){
-  return Number(n || 0).toLocaleString("en-US");
-}
-
-function safe(text){
-  return String(text).replace(/[&<>"']/g,c=>({
-    "&":"&amp;",
-    "<":"&lt;",
-    ">":"&gt;",
-    '"':"&quot;",
-    "'":"&#39;"
-  }[c]));
-}
-
-function showPage(page){
-  ["sales","manage","inventory","reports"].forEach(id=>{
-    document.getElementById(id).classList.toggle("hidden",id!==page);
+function money(value) {
+  return numberValue(value).toLocaleString("en-US", {
+    maximumFractionDigits: 2
   });
-
-  if(page==="manage") renderProductTable();
-  if(page==="inventory") renderMaterials();
-  if(page==="reports") renderReports();
+}
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[ch]);
+}
+function todayString() {
+  const d = new Date();
+  return d.getFullYear() + "-" +
+    String(d.getMonth()+1).padStart(2,"0") + "-" +
+    String(d.getDate()).padStart(2,"0");
 }
 
-function renderProducts(){
-  document.getElementById("products").innerHTML = products.map(p=>
-    `<button class="product" onclick="addItem(${Number(p.id)})">
-      <strong>${safe(p.name)}</strong><br>${money(p.price)} ج.س
-    </button>`
-  ).join("");
+/* تحميل البيانات الحالية مع الحفاظ على سجلاتها */
+let products = loadData(KEYS.products, []);
+let sales = loadData(KEYS.sales, []);
+let materials = loadData(KEYS.materials, []);
+let recipes = loadData(KEYS.recipes, []);
+let cart = [];
+let recipeDraft = [];
+let recipeDraftProductId = "";
+
+if (!products.length) {
+  products = [
+    {id:makeId(),name:"بيتزا",price:0},
+    {id:makeId(),name:"برجر",price:0},
+    {id:makeId(),name:"دجاج بروستد",price:0},
+    {id:makeId(),name:"بطاطس",price:0},
+    {id:makeId(),name:"عصير",price:0},
+    {id:makeId(),name:"قهوة",price:0}
+  ];
+  saveData(KEYS.products, products);
 }
 
-function addItem(id){
-  const p = products.find(x=>x.id===id);
-  if(!p) return;
+/*
+  تخزين كميات الوصفات بوحدة المادة الأساسية في المخزون.
+  kg وg يتحولان إلى g، وL وml يتحولان إلى ml.
+*/
+function convertQty(qty, fromUnit, toUnit) {
+  qty = numberValue(qty);
+  if (fromUnit === toUnit) return qty;
+  const mass = {g:1, kg:1000};
+  const volume = {ml:1, L:1000};
+  if (mass[fromUnit] && mass[toUnit])
+    return qty * mass[fromUnit] / mass[toUnit];
+  if (volume[fromUnit] && volume[toUnit])
+    return qty * volume[fromUnit] / volume[toUnit];
+  return null;
+}
+function recipeQtyInStockUnit(item, material) {
+  return convertQty(item.qty, item.unit, material.unit);
+}
 
-  const item = cart.find(x=>x.id===id);
-  if(item) item.qty++;
-  else cart.push({...p,qty:1});
+function showPage(page, button) {
+  document.querySelectorAll(".page").forEach(el => el.classList.remove("active"));
+  document.getElementById(page).classList.add("active");
+  document.querySelectorAll("nav button").forEach(el => el.classList.remove("active"));
+  const btn = button || document.querySelector('nav button[data-page="' + page + '"]');
+  if (btn) btn.classList.add("active");
+  renderAll();
+}
 
+function renderAll() {
+  renderProductButtons();
+  renderCart();
+  renderProducts();
+  renderInventory();
+  populateRecipeSelects();
+  renderRecipeEditor();
+  renderReports();
+}
+
+function renderProductButtons() {
+  const q = (document.getElementById("productSearch")?.value || "").trim().toLowerCase();
+  const el = document.getElementById("productButtons");
+  if (!el) return;
+  const found = products.filter(p => String(p.name).toLowerCase().includes(q));
+  el.innerHTML = found.map(p => `
+    <div class="product-card">
+      <strong>${escapeHTML(p.name)}</strong>
+      <div class="price">${money(p.price)}</div>
+      <button class="primary" onclick="addToCart('${p.id}')">إضافة للسلة</button>
+    </div>`).join("") || '<p class="muted">لا توجد منتجات.</p>';
+}
+
+function addToCart(id) {
+  const p = products.find(x => String(x.id) === String(id));
+  if (!p) return alert("المنتج غير موجود.");
+  const line = cart.find(x => String(x.id) === String(id));
+  if (line) line.qty++;
+  else cart.push({id:p.id,name:p.name,price:numberValue(p.price),qty:1});
   renderCart();
 }
 
-function renderCart(){
-  document.getElementById("cart").innerHTML = cart.length ?
-    cart.map(p=>`
-      <div style="padding:9px 0;border-bottom:1px solid #ddd">
-        ${safe(p.name)} × ${p.qty}
-        <button class="danger" onclick="removeItem(${Number(p.id)})">−</button>
-        <strong>${money(p.price*p.qty)} ج.س</strong>
-      </div>
-    `).join("") : "لا توجد أصناف في الطلب";
-
-  document.getElementById("total").textContent = money(
-    cart.reduce((s,p)=>s+p.price*p.qty,0)
-  );
-}
-
-function removeItem(id){
-  const p = cart.find(x=>x.id===id);
-  if(p){
-    p.qty--;
-    if(p.qty<=0) cart = cart.filter(x=>x.id!==id);
-  }
+function changeCartQty(id, delta) {
+  const line = cart.find(x => String(x.id) === String(id));
+  if (!line) return;
+  line.qty += delta;
+  if (line.qty <= 0) cart = cart.filter(x => String(x.id) !== String(id));
   renderCart();
 }
-
-function clearCart(){
+function clearCart() {
   cart = [];
   renderCart();
-  document.getElementById("message").textContent = "";
+}
+function renderCart() {
+  const el = document.getElementById("cartLines");
+  if (!el) return;
+  el.innerHTML = cart.map(x => `
+    <div class="cart-line">
+      <div><strong>${escapeHTML(x.name)}</strong><br>
+      <span class="muted">${money(x.price)} × ${x.qty}</span></div>
+      <div class="inline-actions">
+        <button onclick="changeCartQty('${x.id}',-1)">−</button>
+        <button onclick="changeCartQty('${x.id}',1)">+</button>
+      </div>
+    </div>`).join("") || '<p class="muted">السلة فارغة.</p>';
+  document.getElementById("cartTotal").textContent =
+    money(cart.reduce((sum,x) => sum + x.price*x.qty, 0));
 }
 
-function checkout(){
-  if(!cart.length){
-    document.getElementById("message").textContent = "أضف صنفاً أولاً.";
+/* حساب احتياج كل المواد لجميع المنتجات في السلة */
+function calculateRequirements(items) {
+  const required = new Map();
+  const errors = [];
+
+  for (const line of items) {
+    const recipe = recipes.find(r => String(r.productId) === String(line.id));
+    if (!recipe || !Array.isArray(recipe.items) || recipe.items.length === 0) {
+      errors.push("المنتج «" + line.name + "» ليس له وصفة محفوظة.");
+      continue;
+    }
+
+    for (const ingredient of recipe.items) {
+      const material = materials.find(m => String(m.id) === String(ingredient.materialId));
+      if (!material) {
+        errors.push("توجد مادة محذوفة من وصفة «" + line.name + "».");
+        continue;
+      }
+      const amount = recipeQtyInStockUnit(ingredient, material);
+      if (amount === null || amount <= 0) {
+        errors.push("وحدة القياس أو الكمية غير صحيحة للمادة «" + material.name + "».");
+        continue;
+      }
+      const old = required.get(String(material.id)) || 0;
+      required.set(String(material.id), old + amount * line.qty);
+    }
+  }
+  return {required, errors};
+}
+
+/* لا يُسمح بالبيع حتى تُسجل وصفة صحيحة لكل منتج */
+function checkout() {
+  if (!cart.length) return alert("السلة فارغة.");
+
+  const result = calculateRequirements(cart);
+  if (result.errors.length) {
+    alert("تعذر إتمام البيع:\n\n" + result.errors.map(x => "• " + x).join("\n") +
+      "\n\nأكمل وصفات المنتجات أولاً من شاشة الوصفات.");
     return;
   }
 
-  const total = cart.reduce((s,p)=>s+p.price*p.qty,0);
+  const shortages = [];
+  for (const [id, needed] of result.required) {
+    const m = materials.find(x => String(x.id) === id);
+    if (!m || numberValue(m.qty) + 1e-9 < needed) {
+      shortages.push((m ? m.name : "مادة غير موجودة") +
+        ": المطلوب " + money(needed) +
+        " والمتوفر " + money(m ? m.qty : 0));
+    }
+  }
 
-  const invoice = {
-    id:Date.now(),
-    date:new Date().toLocaleString(),
-    items:cart.map(p=>({...p})),
-    total
+  if (shortages.length) {
+    alert("المخزون غير كافٍ، لم يتم تسجيل البيع:\n\n" +
+      shortages.map(x => "• " + x).join("\n"));
+    return;
+  }
+
+  const sale = {
+    id: makeId(),
+    date: new Date().toISOString(),
+    items: cart.map(x => ({id:x.id,name:x.name,price:x.price,qty:x.qty})),
+    total: cart.reduce((sum,x) => sum + x.price*x.qty, 0)
   };
 
-  sales.push(invoice);
+  /* نحفظ النسخة السابقة لإرجاعها إن فشل الحفظ */
+  const oldMaterials = JSON.stringify(materials);
+  const oldSales = JSON.stringify(sales);
 
-  try{
-    saveSales();
-  }catch(e){
-    sales.pop();
-    document.getElementById("message").textContent =
-      "تعذر حفظ الفاتورة. تحقق من مساحة التخزين.";
-    return;
+  try {
+    for (const [id, needed] of result.required) {
+      const m = materials.find(x => String(x.id) === id);
+      m.qty = Math.max(0, numberValue(m.qty) - needed);
+    }
+    sales.push(sale);
+    saveData(KEYS.materials, materials);
+    saveData(KEYS.sales, sales);
+    cart = [];
+    renderAll();
+    alert("تم إتمام البيع وخصم المواد من المخزون بنجاح.\nرقم العملية: " + sale.id);
+  } catch (error) {
+    /* محاولة استرجاع البيانات إذا فشل الحفظ */
+    try {
+      materials = JSON.parse(oldMaterials);
+      sales = JSON.parse(oldSales);
+      saveData(KEYS.materials, materials);
+      saveData(KEYS.sales, sales);
+    } catch (rollbackError) {
+      console.error("تعذر استرجاع البيانات:", rollbackError);
+    }
+    alert("لم تكتمل عملية الحفظ. تحقق من مساحة المتصفح ثم أعد فحص المخزون والمبيعات.");
+    console.error(error);
   }
-
-  cart = [];
-  renderCart();
-  document.getElementById("message").textContent =
-    "تم حفظ الفاتورة على هذا الجهاز.";
 }
 
-function addProduct(){
-  const name = document.getElementById("pname").value.trim();
-  const price = Number(document.getElementById("pprice").value);
-  const msg = document.getElementById("productMessage");
+/* المنتجات */
+function saveProduct() {
+  const id = document.getElementById("editProductId").value;
+  const name = document.getElementById("productName").value.trim();
+  const price = Number(document.getElementById("productPrice").value);
+  if (!name) return alert("أدخل اسم المنتج.");
+  if (!Number.isFinite(price) || price < 0) return alert("أدخل سعراً صحيحاً.");
 
-  if(!name || !Number.isFinite(price) || price<=0){
-    msg.textContent = "أدخل اسماً وسعراً صحيحين.";
-    return;
+  if (id) {
+    const p = products.find(x => String(x.id) === String(id));
+    if (!p) return alert("المنتج غير موجود.");
+    p.name = name;
+    p.price = price;
+  } else {
+    products.push({id:makeId(),name,price});
   }
-
-  const product = {id:Date.now(),name,price};
-  products.push(product);
-
-  try{
-    saveProducts();
-  }catch(e){
-    products.pop();
-    msg.textContent = "تعذر حفظ الصنف.";
-    return;
-  }
-
-  renderProducts();
-  renderProductTable();
-  document.getElementById("pname").value = "";
-  document.getElementById("pprice").value = "";
-  msg.textContent = "تم حفظ الصنف.";
+  saveData(KEYS.products, products);
+  resetProductForm();
+  renderAll();
 }
-
-function renderProductTable(){
-  document.getElementById("productTable").innerHTML = products.map(p=>
-    `<tr>
-      <td>${safe(p.name)}</td>
+function editProduct(id) {
+  const p = products.find(x => String(x.id) === String(id));
+  if (!p) return;
+  document.getElementById("editProductId").value = p.id;
+  document.getElementById("productName").value = p.name;
+  document.getElementById("productPrice").value = p.price;
+  document.getElementById("productFormTitle").textContent = "تعديل المنتج";
+  showPage("products");
+}
+function resetProductForm() {
+  document.getElementById("editProductId").value = "";
+  document.getElementById("productName").value = "";
+  document.getElementById("productPrice").value = "";
+  document.getElementById("productFormTitle").textContent = "إضافة منتج جديد";
+}
+function deleteProduct(id) {
+  if (recipes.some(r => String(r.productId) === String(id)))
+    return alert("احذف وصفة المنتج أولاً قبل حذف المنتج.");
+  if (sales.some(s => (s.items || []).some(i => String(i.id) === String(id))))
+    return alert("لا يمكن حذف منتج له عمليات بيع سابقة؛ يمكنك تعديل اسمه وسعره.");
+  if (!confirm("هل تريد حذف هذا المنتج؟")) return;
+  products = products.filter(x => String(x.id) !== String(id));
+  saveData(KEYS.products, products);
+  renderAll();
+}
+function renderProducts() {
+  const el = document.getElementById("productsTable");
+  if (!el) return;
+  el.innerHTML = products.map(p => {
+    const hasRecipe = recipes.some(r => String(r.productId) === String(p.id) && r.items?.length);
+    return `<tr><td>${escapeHTML(p.name)}</td>
       <td>${money(p.price)}</td>
-      <td>
-        <button class="primary" onclick="editProduct(${Number(p.id)})">تعديل</button>
-        <button class="danger" onclick="deleteProduct(${Number(p.id)})">حذف</button>
-      </td>
-    </tr>`
+      <td>${hasRecipe ? '<span class="success">محفوظة</span>' : '<span class="low">غير مكتملة</span>'}</td>
+      <td><div class="inline-actions">
+      <button class="small-btn" onclick="editProduct('${p.id}')">تعديل</button>
+      <button class="small-btn danger" onclick="deleteProduct('${p.id}')">حذف</button>
+      </div></td></tr>`;
+  }).join("") || '<tr><td colspan="4">لا توجد منتجات.</td></tr>';
+}
+
+/* المخزون */
+function saveMaterial() {
+  const id = document.getElementById("editMaterialId").value;
+  const name = document.getElementById("materialName").value.trim();
+  const unit = document.getElementById("materialUnit").value;
+  const qty = Number(document.getElementById("materialQty").value);
+  const min = Number(document.getElementById("materialMin").value);
+
+  if (!name) return alert("أدخل اسم المادة.");
+  if (!Number.isFinite(qty) || qty < 0 || !Number.isFinite(min) || min < 0)
+    return alert("تحقق من الكمية وحد التنبيه.");
+
+  if (id) {
+    const m = materials.find(x => String(x.id) === String(id));
+    if (!m) return alert("المادة غير موجودة.");
+    if (m.unit !== unit && recipes.some(r => r.items?.some(i => String(i.materialId) === String(id)))) {
+      return alert("لا يمكن تغيير وحدة مادة مرتبطة بوصفة. عدّل الوصفات أولاً.");
+    }
+    m.name = name;
+    m.unit = unit;
+    m.qty = qty;
+    m.min = min;
+  } else {
+    materials.push({id:makeId(),name,unit,qty,min});
+  }
+  saveData(KEYS.materials, materials);
+  resetMaterialForm();
+  renderAll();
+}
+function resetMaterialForm() {
+  document.getElementById("editMaterialId").value = "";
+  document.getElementById("materialName").value = "";
+  document.getElementById("materialUnit").value = "kg";
+  document.getElementById("materialQty").value = "0";
+  document.getElementById("materialMin").value = "0";
+  document.getElementById("materialFormTitle").textContent = "إضافة مادة خام";
+}
+function editMaterial(id) {
+  const m = materials.find(x => String(x.id) === String(id));
+  if (!m) return;
+  document.getElementById("editMaterialId").value = m.id;
+  document.getElementById("materialName").value = m.name;
+  document.getElementById("materialUnit").value = m.unit;
+  document.getElementById("materialQty").value = m.qty;
+  document.getElementById("materialMin").value = m.min;
+  document.getElementById("materialFormTitle").textContent = "تعديل مادة خام";
+  showPage("inventory");
+}
+function deleteMaterial(id) {
+  if (recipes.some(r => r.items?.some(i => String(i.materialId) === String(id))))
+    return alert("هذه المادة مستخدمة في وصفة. عدّل الوصفات أولاً.");
+  if (!confirm("هل تريد حذف المادة؟")) return;
+  materials = materials.filter(m => String(m.id) !== String(id));
+  saveData(KEYS.materials, materials);
+  renderAll();
+}
+function receiveStock() {
+  const id = document.getElementById("receiveMaterial").value;
+  const qty = Number(document.getElementById("receiveQty").value);
+  const m = materials.find(x => String(x.id) === String(id));
+  if (!m) return alert("اختر مادة خام.");
+  if (!Number.isFinite(qty) || qty <= 0) return alert("أدخل كمية موجبة.");
+  const old = m.qty;
+  try {
+    m.qty = numberValue(m.qty) + qty;
+    saveData(KEYS.materials, materials);
+    document.getElementById("receiveQty").value = "";
+    renderAll();
+    alert("تمت إضافة الكمية للمخزون.");
+  } catch (error) {
+    m.qty = old;
+    alert("تعذر حفظ الكمية.");
+  }
+}
+function renderInventory() {
+  const table = document.getElementById("inventoryTable");
+  if (!table) return;
+  document.getElementById("materialCount").textContent = materials.length;
+  const low = materials.filter(m => numberValue(m.qty) <= numberValue(m.min));
+  document.getElementById("lowCount").textContent = low.length;
+  document.getElementById("inventoryNotice").innerHTML = low.length
+    ? `<div class="notice">تنبيه: ${low.length} مادة وصلت إلى حد التنبيه أو أقل.</div>`
+    : "";
+  table.innerHTML = materials.map(m => {
+    const isLow = numberValue(m.qty) <= numberValue(m.min);
+    return `<tr><td>${escapeHTML(m.name)}</td>
+      <td>${escapeHTML(m.unit)}</td>
+      <td>${money(m.qty)}</td><td>${money(m.min)}</td>
+      <td>${isLow ? '<span class="low">منخفض</span>' : '<span class="success">متوفر</span>'}</td>
+      <td><div class="inline-actions">
+      <button class="small-btn" onclick="editMaterial('${m.id}')">تعديل</button>
+      <button class="small-btn danger" onclick="deleteMaterial('${m.id}')">حذف</button>
+      </div></td></tr>`;
+  }).join("") || '<tr><td colspan="6">لا توجد مواد خام.</td></tr>';
+
+  const receive = document.getElementById("receiveMaterial");
+  const current = receive.value;
+  receive.innerHTML = materials.map(m =>
+    `<option value="${m.id}">${escapeHTML(m.name)} (${escapeHTML(m.unit)})</option>`
   ).join("");
+  if (materials.some(m => String(m.id) === current)) receive.value = current;
 }
 
-function editProduct(id){
-  const p = products.find(x=>x.id===id);
-  if(!p) return;
-
-  const name = prompt("اسم الصنف:",p.name);
-  if(name===null) return;
-
-  const priceText = prompt("السعر الجديد:",p.price);
-  if(priceText===null) return;
-
-  const price = Number(priceText);
-
-  if(!name.trim() || !Number.isFinite(price) || price<=0){
-    alert("الاسم والسعر غير صحيحين.");
-    return;
+/* الوصفات */
+function populateRecipeSelects() {
+  const productSelect = document.getElementById("recipeProduct");
+  const materialSelect = document.getElementById("recipeMaterial");
+  if (!productSelect || !materialSelect) return;
+  const selectedProduct = productSelect.value || recipeDraftProductId;
+  const selectedMaterial = materialSelect.value;
+  productSelect.innerHTML = products.map(p =>
+    `<option value="${p.id}">${escapeHTML(p.name)}</option>`
+  ).join("");
+  materialSelect.innerHTML = materials.map(m =>
+    `<option value="${m.id}">${escapeHTML(m.name)} (${escapeHTML(m.unit)})</option>`
+  ).join("");
+  if (products.some(p => String(p.id) === String(selectedProduct)))
+    productSelect.value = selectedProduct;
+  if (materials.some(m => String(m.id) === String(selectedMaterial)))
+    materialSelect.value = selectedMaterial;
+}
+function renderRecipeEditor() {
+  const select = document.getElementById("recipeProduct");
+  if (!select) return;
+  const productId = select.value;
+  if (recipeDraftProductId !== productId) {
+    recipeDraftProductId = productId;
+    const saved = recipes.find(r => String(r.productId) === String(productId));
+    recipeDraft = saved ? saved.items.map(i => ({...i})) : [];
+  }
+  const p = products.find(x => String(x.id) === String(productId));
+  const status = document.getElementById("recipeStatus");
+  if (!p) {
+    status.innerHTML = '<p class="muted">أضف منتجاً أولاً.</p>';
+  } else {
+    status.innerHTML = `<p>الوصفة الحالية للمنتج: <strong>${escapeHTML(p.name)}</strong></p>`;
   }
 
-  const old = {...p};
-  p.name = name.trim();
-  p.price = price;
-
-  try{
-    saveProducts();
-  }catch(e){
-    Object.assign(p,old);
-    alert("تعذر حفظ التعديل.");
-    return;
+  const el = document.getElementById("recipeLines");
+  el.innerHTML = recipeDraft.map((i,index) => {
+    const m = materials.find(x => String(x.id) === String(i.materialId));
+    return `<div class="cart-line">
+      <div><strong>${escapeHTML(m ? m.name : "مادة محذوفة")}</strong><br>
+      <span class="muted">${money(i.qty)} ${escapeHTML(i.unit)} لكل قطعة</span></div>
+      <button class="danger" onclick="removeRecipeItem(${index})">حذف</button>
+    </div>`;
+  }).join("") || '<p class="muted">لم تضف مكونات لهذه الوصفة بعد.</p>';
+}
+function addRecipeItem() {
+  const productId = document.getElementById("recipeProduct").value;
+  const materialId = document.getElementById("recipeMaterial").value;
+  const qty = Number(document.getElementById("recipeQty").value);
+  const unit = document.getElementById("recipeUnit").value;
+  if (!productId) return alert("أضف منتجاً أولاً.");
+  if (!materialId) return alert("أضف مادة خام أولاً.");
+  if (!Number.isFinite(qty) || qty <= 0) return alert("أدخل كمية أكبر من صفر.");
+  const material = materials.find(m => String(m.id) === String(materialId));
+  if (!material) return alert("المادة غير موجودة.");
+  if (convertQty(qty, unit, material.unit) === null)
+    return alert("وحدة الكمية غير متوافقة مع وحدة المادة في المخزون.");
+  const existing = recipeDraft.find(i => String(i.materialId) === String(materialId));
+  if (existing) {
+    const converted = convertQty(qty, unit, existing.unit);
+    if (converted === null) return alert("تعذر تحويل وحدة القياس.");
+    existing.qty += converted;
+  } else {
+    recipeDraft.push({materialId,qty,unit});
   }
-
-  renderProductTable();
-  renderProducts();
+  document.getElementById("recipeQty").value = "";
+  renderRecipeEditor();
+}
+function removeRecipeItem(index) {
+  recipeDraft.splice(index,1);
+  renderRecipeEditor();
+}
+function saveRecipe() {
+  const productId = document.getElementById("recipeProduct").value;
+  if (!productId) return alert("اختر منتجاً.");
+  if (!recipeDraft.length) return alert("أضف مكوناً واحداً على الأقل.");
+  for (const i of recipeDraft) {
+    const m = materials.find(x => String(x.id) === String(i.materialId));
+    if (!m || convertQty(i.qty,i.unit,m.unit) === null || i.qty <= 0)
+      return alert("توجد مادة أو كمية غير صالحة في الوصفة.");
+  }
+  const old = JSON.stringify(recipes);
+  try {
+    const existing = recipes.find(r => String(r.productId) === String(productId));
+    if (existing) existing.items = recipeDraft.map(i => ({...i}));
+    else recipes.push({productId,items:recipeDraft.map(i => ({...i}))});
+    saveData(KEYS.recipes, recipes);
+    renderAll();
+    alert("تم حفظ الوصفة. سيخصم النظام مكوناتها عند إتمام البيع.");
+  } catch (error) {
+    recipes = JSON.parse(old);
+    alert("تعذر حفظ الوصفة.");
+  }
+}
+function deleteRecipe() {
+  const productId = document.getElementById("recipeProduct").value;
+  if (!productId) return;
+  if (!confirm("هل تريد حذف وصفة هذا المنتج؟ لن يمكن بيعه حتى تضيف وصفة جديدة.")) return;
+  recipes = recipes.filter(r => String(r.productId) !== String(productId));
+  saveData(KEYS.recipes, recipes);
+  recipeDraft = [];
+  renderAll();
 }
 
-function deleteProduct(id){
-  if(!confirm("هل تريد حذف هذا الصنف؟")) return;
+/* التقارير */
+function renderReports() {
+  const from = document.getElementById("reportFrom")?.value || "";
+  const to = document.getElementById("reportTo")?.value || "";
+  const filtered = sales.filter(s => {
+    const d = String(s.date || "").slice(0,10);
+    return (!from || d >= from) && (!to || d <= to);
+  });
+  document.getElementById("reportCount").textContent = filtered.length;
+  document.getElementById("reportTotal").textContent =
+    money(filtered.reduce((sum,s) => sum + numberValue(s.total),0));
+  document.getElementById("todayTotal").textContent =
+    money(sales.filter(s => String(s.date || "").slice(0,10) === todayString())
+      .reduce((sum,s) => sum + numberValue(s.total),0));
 
-  const oldProducts = products;
-  products = products.filter(p=>p.id!==id);
-
-  try{
-    saveProducts();
-  }catch(e){
-    products = oldProducts;
-    alert("تعذر حذف الصنف.");
-    return;
-  }
-
-  renderProductTable();
-  renderProducts();
+  document.getElementById("reportsTable").innerHTML = filtered.slice().reverse().map(s => {
+    const date = s.date ? new Date(s.date).toLocaleString("ar") : "—";
+    const items = (s.items || []).map(i =>
+      `${escapeHTML(i.name)} × ${numberValue(i.qty)}`
+    ).join("، ");
+    return `<tr><td>${escapeHTML(s.id)}</td><td>${escapeHTML(date)}</td>
+      <td>${items}</td><td>${money(s.total)}</td></tr>`;
+  }).join("") || '<tr><td colspan="4">لا توجد عمليات بيع في الفترة المحددة.</td></tr>';
+}
+function clearReportDates() {
+  document.getElementById("reportFrom").value = "";
+  document.getElementById("reportTo").value = "";
+  renderReports();
 }
 
-/* وظائف المواد الخام */
-
-function addMaterial(){
-  const name = document.getElementById("mname").value.trim();
-  const unit = document.getElementById("munit").value;
-  const qtyText = document.getElementById("mqty").value;
-  const minText = document.getElementById("mmin").value;
-  const qty = Number(qtyText);
-  const min = Number(minText);
-  const msg = document.getElementById("materialMessage");
-
-  if(!name || qtyText.trim()==="" || minText.trim()==="" ||
-     !Number.isFinite(qty) || qty<0 ||
-     !Number.isFinite(min) || min<0){
-    msg.textContent = "تحقق من الاسم والكميات المدخلة.";
-    return;
-  }
-
-  if(materials.some(m=>m.name.trim().toLowerCase()===name.toLowerCase())){
-    msg.textContent = "هذه المادة مسجلة بالفعل.";
-    return;
-  }
-
-  const material = {
-    id:Date.now(),
-    name,
-    unit,
-    qty,
-    min
-  };
-
-  materials.push(material);
-
-  try{
-    saveMaterials();
-  }catch(e){
-    materials.pop();
-    msg.textContent = "تعذر حفظ المادة.";
-    return;
-  }
-
-  renderMaterials();
-  document.getElementById("mname").value = "";
-  document.getElementById("mqty").value = "0";
-  document.getElementById("mmin").value = "5";
-  msg.textContent = "تم حفظ المادة بنجاح.";
-}
-
-function renderMaterials(){
-  const table = document.getElementById("materialTable");
-  if(!table) return;
-
-  if(!materials.length){
-    table.innerHTML =
-      '<tr><td colspan="5">لم تتم إضافة مواد خام بعد.</td></tr>';
-    return;
-  }
-
-  table.innerHTML = materials.map(m=>{
-    const low = Number(m.qty)<=Number(m.min);
-    return `
-      <tr>
-        <td>${safe(m.name)}</td>
-        <td>${safe(m.unit)}</td>
-        <td class="${low?'low-stock':''}">
-          ${money(m.qty)} ${low?'⚠️':''}
-        </td>
-        <td>${money(m.min)}</td>
-        <td>
-          <button class="primary" onclick="receiveMaterial(${Number(m.id)})">
-            إضافة كمية
-          </button>
-          <button class="danger" onclick="deleteMaterial(${Number(m.id)})">
-            حذف
-          </button>
-        </td>
-      </tr>
-    `;
-  }).join("");
-}
-
-function receiveMaterial(id){
-  const material = materials.find(m=>m.id===id);
-  if(!material) return;
-
-  const text = prompt(
-    "أدخل الكمية المضافة من "+material.name+
-    " ("+material.unit+"):"
-  );
-
-  if(text===null) return;
-
-  const qty = Number(text);
-
-  if(!text.trim() || !Number.isFinite(qty) || qty<=0){
-    alert("أدخل كمية صحيحة أكبر من صفر.");
-    return;
-  }
-
-  const oldQty = material.qty;
-  material.qty += qty;
-
-  try{
-    saveMaterials();
-  }catch(e){
-    material.qty = oldQty;
-    alert("تعذر حفظ الكمية المضافة.");
-    return;
-  }
-
-  renderMaterials();
-}
-
-function deleteMaterial(id){
-  const material = materials.find(m=>m.id===id);
-  if(!material) return;
-
-  if(!confirm("هل تريد حذف المادة "+material.name+"؟")) return;
-
-  const oldMaterials = materials;
-  materials = materials.filter(m=>m.id!==id);
-
-  try{
-    saveMaterials();
-  }catch(e){
-    materials = oldMaterials;
-    alert("تعذر حذف المادة.");
-    return;
-  }
-
-  renderMaterials();
-}
-
-/* تقارير المبيعات */
-
-function renderReports(){
-  document.getElementById("count").textContent = sales.length;
-  document.getElementById("revenue").textContent = money(
-    sales.reduce((s,x)=>s+Number(x.total||0),0)
-  );
-
-  document.getElementById("salesList").innerHTML =
-    sales.slice().reverse().map(x=>`
-      <div class="panel">
-        <strong>فاتورة ${safe(x.id)}</strong><br>
-        ${safe(x.date||"")}<br>
-        الإجمالي: ${money(x.total)} ج.س
-      </div>
-    `).join("") || "لا توجد مبيعات مسجلة.";
-}
-
-/* بدء التطبيق */
-renderProducts();
-renderCart();
+document.getElementById("clock").textContent = new Date().toLocaleDateString("ar");
+renderAll();
 </script>
 </body>
 </html>
