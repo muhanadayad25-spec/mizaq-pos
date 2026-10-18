@@ -4,82 +4,149 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>نظام المبيعات</title>
+<title>MIZAQ POS - نظام المبيعات</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial;background:#f1f4f8;color:#172b4d}
+body{margin:0;font-family:Arial,sans-serif;background:#f1f4f8;color:#172b4d}
 header{background:#102b50;color:white;padding:18px;text-align:center}
+header h1{margin:0 0 8px}
 nav{display:flex;gap:8px;padding:12px;background:white;flex-wrap:wrap}
 button{border:0;border-radius:7px;padding:11px;cursor:pointer;font-size:15px}
 nav button,.primary{background:#146cce;color:white}
 main{padding:16px;max-width:1100px;margin:auto}
-.panel{background:white;padding:16px;border-radius:12px;margin-bottom:15px}
+.panel{background:white;padding:16px;border-radius:12px;margin-bottom:15px;box-shadow:0 2px 8px #172b4d0a}
 .layout{display:grid;grid-template-columns:1fr 320px;gap:15px}
 .products{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:10px}
 .product{background:#e8f1ff;color:#102b50;min-height:80px}
-input{padding:12px;border:1px solid #ccd3dd;border-radius:7px;width:100%;margin:5px 0 12px}
+input,select{padding:12px;border:1px solid #ccd3dd;border-radius:7px;width:100%;margin:5px 0 12px;background:white}
 label{display:block}
 table{width:100%;border-collapse:collapse}
-td,th{padding:10px;border-bottom:1px solid #ddd;text-align:right}
+td,th{padding:10px;border-bottom:1px solid #ddd;text-align:right;white-space:nowrap}
 .total{font-size:21px;font-weight:bold;margin:15px 0}
 .danger{background:#fce8e8;color:#a22}
 .success{background:#13794b;color:white;width:100%}
 .hidden{display:none}
 .muted{color:#667085}
-@media(max-width:700px){.layout{grid-template-columns:1fr}main{padding:9px}}
+.low-stock{color:#b42318;font-weight:bold}
+.message{margin-top:10px}
+@media(max-width:700px){
+ .layout{grid-template-columns:1fr}
+ main{padding:9px}
+ nav button{flex:1}
+ .panel{padding:12px}
+}
 </style>
 </head>
 <body>
 <header>
-<h1>نظام المبيعات</h1>
-<p>إدارة المطاعم والكافيهات</p>
+<h1>MIZAQ POS</h1>
+<p>نظام إدارة مبيعات المطاعم والكافيهات</p>
 </header>
 
 <nav>
 <button onclick="showPage('sales')">شاشة البيع</button>
 <button onclick="showPage('manage')">إدارة الأصناف</button>
+<button onclick="showPage('inventory')">المخزون</button>
 <button onclick="showPage('reports')">تقارير المبيعات</button>
 </nav>
 
 <main>
+
+<!-- شاشة البيع -->
 <section id="sales">
 <div class="layout">
 <div class="panel">
 <h2>قائمة الأصناف</h2>
 <div id="products" class="products"></div>
 </div>
+
 <div class="panel">
 <h2>الطلب الحالي</h2>
 <div id="cart"></div>
 <div class="total">الإجمالي: <span id="total">0</span> ج.س</div>
 <button class="success" onclick="checkout()">إتمام البيع</button>
 <button class="danger" style="width:100%;margin-top:8px" onclick="clearCart()">إلغاء الطلب</button>
-<p id="message"></p>
+<p id="message" class="message"></p>
 </div>
 </div>
 </section>
 
+<!-- إدارة الأصناف -->
 <section id="manage" class="hidden">
 <div class="panel">
 <h2>إضافة صنف جديد</h2>
-<label>اسم الصنف</label>
+<label for="pname">اسم الصنف</label>
 <input id="pname" placeholder="مثال: شاورما دجاج">
-<label>السعر بالجنيه السوداني</label>
+
+<label for="pprice">السعر بالجنيه السوداني</label>
 <input id="pprice" type="number" min="0.01" step="0.01" placeholder="مثال: 12000">
+
 <button class="primary" onclick="addProduct()">حفظ الصنف</button>
-<p id="productMessage"></p>
+<p id="productMessage" class="message"></p>
 </div>
+
 <div class="panel">
 <h2>الأصناف المسجلة</h2>
 <div style="overflow-x:auto">
 <table>
-<thead><tr><th>الصنف</th><th>السعر</th><th>إجراء</th></tr></thead>
+<thead>
+<tr><th>الصنف</th><th>السعر</th><th>إجراء</th></tr>
+</thead>
 <tbody id="productTable"></tbody>
 </table>
 </div>
 </div>
 </section>
 
+<!-- إدارة المخزون -->
+<section id="inventory" class="hidden">
+<div class="panel">
+<h2>إضافة مادة خام</h2>
+
+<label for="mname">اسم المادة</label>
+<input id="mname" placeholder="مثال: جبن موزاريلا">
+
+<label for="munit">وحدة القياس</label>
+<select id="munit">
+<option value="كجم">كيلوغرام</option>
+<option value="جرام">جرام</option>
+<option value="لتر">لتر</option>
+<option value="مل">ملليلتر</option>
+<option value="قطعة">قطعة</option>
+<option value="عبوة">عبوة</option>
+</select>
+
+<label for="mqty">الكمية الافتتاحية</label>
+<input id="mqty" type="number" min="0" step="0.001" value="0">
+
+<label for="mmin">حد التنبيه عند انخفاض المخزون</label>
+<input id="mmin" type="number" min="0" step="0.001" value="5">
+
+<button class="primary" onclick="addMaterial()">حفظ المادة</button>
+<p id="materialMessage" class="message"></p>
+</div>
+
+<div class="panel">
+<h2>المواد الخام المتوفرة</h2>
+<p class="muted">ستظهر علامة تنبيه عند وصول الكمية إلى حد التنبيه أو أقل منه.</p>
+<div style="overflow-x:auto">
+<table>
+<thead>
+<tr>
+<th>المادة</th>
+<th>الوحدة</th>
+<th>الكمية</th>
+<th>حد التنبيه</th>
+<th>الإجراءات</th>
+</tr>
+</thead>
+<tbody id="materialTable"></tbody>
+</table>
+</div>
+</div>
+</section>
+
+<!-- تقارير المبيعات -->
 <section id="reports" class="hidden">
 <div class="panel">
 <h2>تقرير المبيعات المحفوظة</h2>
@@ -89,10 +156,13 @@ td,th{padding:10px;border-bottom:1px solid #ddd;text-align:right}
 <p class="muted">هذه التقارير تخص بيانات هذا المتصفح والجهاز فقط.</p>
 </div>
 </section>
+
 </main>
 
 <script>
-const defaultProducts=[
+"use strict";
+
+const defaultProducts = [
 {id:1,name:"بيتزا",price:15000},
 {id:2,name:"برجر",price:10000},
 {id:3,name:"دجاج بروست",price:18000},
@@ -102,137 +172,380 @@ const defaultProducts=[
 ];
 
 function load(key,fallback){
-try{
-const value=localStorage.getItem(key);
-return value===null?fallback:JSON.parse(value);
-}catch(e){return fallback}
+  try{
+    const value = localStorage.getItem(key);
+    return value === null ? fallback : JSON.parse(value);
+  }catch(e){
+    return fallback;
+  }
 }
-let products=load("restaurant_products_v1",defaultProducts);
-let sales=load("restaurant_sales_v1",[]);
-let cart=[];
+
+let products = load("restaurant_products_v1",defaultProducts);
+let sales = load("restaurant_sales_v1",[]);
+let materials = load("mizaq_raw_materials_v1",[]);
+let cart = [];
 
 function saveProducts(){
-localStorage.setItem("restaurant_products_v1",JSON.stringify(products));
+  localStorage.setItem("restaurant_products_v1",JSON.stringify(products));
 }
-function money(n){return Number(n).toLocaleString("en-US")}
+
+function saveSales(){
+  localStorage.setItem("restaurant_sales_v1",JSON.stringify(sales));
+}
+
+function saveMaterials(){
+  localStorage.setItem("mizaq_raw_materials_v1",JSON.stringify(materials));
+}
+
+function money(n){
+  return Number(n || 0).toLocaleString("en-US");
+}
+
 function safe(text){
-return String(text).replace(/[&<>"']/g,c=>({
-"&":"&amp;","<":"&lt;",">":"&gt;",
-'"':"&quot;","'":"&#39;"
-}[c]));
+  return String(text).replace(/[&<>"']/g,c=>({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[c]));
 }
+
 function showPage(page){
-["sales","manage","reports"].forEach(id=>{
-document.getElementById(id).classList.toggle("hidden",id!==page);
-});
-if(page==="manage")renderProductTable();
-if(page==="reports")renderReports();
+  ["sales","manage","inventory","reports"].forEach(id=>{
+    document.getElementById(id).classList.toggle("hidden",id!==page);
+  });
+
+  if(page==="manage") renderProductTable();
+  if(page==="inventory") renderMaterials();
+  if(page==="reports") renderReports();
 }
+
 function renderProducts(){
-document.getElementById("products").innerHTML=products.map(p=>
-`<button class="product" onclick="addItem(${p.id})">
-<strong>${safe(p.name)}</strong><br>${money(p.price)} ج.س
-</button>`).join("");
+  document.getElementById("products").innerHTML = products.map(p=>
+    `<button class="product" onclick="addItem(${Number(p.id)})">
+      <strong>${safe(p.name)}</strong><br>${money(p.price)} ج.س
+    </button>`
+  ).join("");
 }
+
 function addItem(id){
-const p=products.find(x=>x.id===id);
-if(!p)return;
-const item=cart.find(x=>x.id===id);
-if(item)item.qty++;
-else cart.push({...p,qty:1});
-renderCart();
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+
+  const item = cart.find(x=>x.id===id);
+  if(item) item.qty++;
+  else cart.push({...p,qty:1});
+
+  renderCart();
 }
+
 function renderCart(){
-document.getElementById("cart").innerHTML=cart.length?
-cart.map(p=>`<div style="padding:9px 0;border-bottom:1px solid #ddd">
-${safe(p.name)} × ${p.qty}
-<button class="danger" onclick="removeItem(${p.id})">−</button>
-<strong>${money(p.price*p.qty)} ج.س</strong>
-</div>`).join(""):"لا توجد أصناف في الطلب";
-document.getElementById("total").textContent=money(
-cart.reduce((s,p)=>s+p.price*p.qty,0));
+  document.getElementById("cart").innerHTML = cart.length ?
+    cart.map(p=>`
+      <div style="padding:9px 0;border-bottom:1px solid #ddd">
+        ${safe(p.name)} × ${p.qty}
+        <button class="danger" onclick="removeItem(${Number(p.id)})">−</button>
+        <strong>${money(p.price*p.qty)} ج.س</strong>
+      </div>
+    `).join("") : "لا توجد أصناف في الطلب";
+
+  document.getElementById("total").textContent = money(
+    cart.reduce((s,p)=>s+p.price*p.qty,0)
+  );
 }
+
 function removeItem(id){
-const p=cart.find(x=>x.id===id);
-if(p){p.qty--;if(p.qty<=0)cart=cart.filter(x=>x.id!==id)}
-renderCart();
+  const p = cart.find(x=>x.id===id);
+  if(p){
+    p.qty--;
+    if(p.qty<=0) cart = cart.filter(x=>x.id!==id);
+  }
+  renderCart();
 }
+
 function clearCart(){
-cart=[];
-renderCart();
-document.getElementById("message").textContent="";
+  cart = [];
+  renderCart();
+  document.getElementById("message").textContent = "";
 }
+
 function checkout(){
-if(!cart.length){
-document.getElementById("message").textContent="أضف صنفاً أولاً";
-return;
+  if(!cart.length){
+    document.getElementById("message").textContent = "أضف صنفاً أولاً.";
+    return;
+  }
+
+  const total = cart.reduce((s,p)=>s+p.price*p.qty,0);
+
+  const invoice = {
+    id:Date.now(),
+    date:new Date().toLocaleString(),
+    items:cart.map(p=>({...p})),
+    total
+  };
+
+  sales.push(invoice);
+
+  try{
+    saveSales();
+  }catch(e){
+    sales.pop();
+    document.getElementById("message").textContent =
+      "تعذر حفظ الفاتورة. تحقق من مساحة التخزين.";
+    return;
+  }
+
+  cart = [];
+  renderCart();
+  document.getElementById("message").textContent =
+    "تم حفظ الفاتورة على هذا الجهاز.";
 }
-const total=cart.reduce((s,p)=>s+p.price*p.qty,0);
-sales.push({
-id:Date.now(),date:new Date().toLocaleString(),
-items:cart.map(p=>({...p})),total
-});
-localStorage.setItem("restaurant_sales_v1",JSON.stringify(sales));
-cart=[];
-renderCart();
-document.getElementById("message").textContent="تم حفظ الفاتورة على هذا الجهاز.";
-}
+
 function addProduct(){
-const name=document.getElementById("pname").value.trim();
-const price=Number(document.getElementById("pprice").value);
-if(!name||!Number.isFinite(price)||price<=0){
-document.getElementById("productMessage").textContent="أدخل اسماً وسعراً صحيحين.";
-return;
+  const name = document.getElementById("pname").value.trim();
+  const price = Number(document.getElementById("pprice").value);
+  const msg = document.getElementById("productMessage");
+
+  if(!name || !Number.isFinite(price) || price<=0){
+    msg.textContent = "أدخل اسماً وسعراً صحيحين.";
+    return;
+  }
+
+  const product = {id:Date.now(),name,price};
+  products.push(product);
+
+  try{
+    saveProducts();
+  }catch(e){
+    products.pop();
+    msg.textContent = "تعذر حفظ الصنف.";
+    return;
+  }
+
+  renderProducts();
+  renderProductTable();
+  document.getElementById("pname").value = "";
+  document.getElementById("pprice").value = "";
+  msg.textContent = "تم حفظ الصنف.";
 }
-products.push({id:Date.now(),name,price});
-saveProducts();
-renderProducts();
-renderProductTable();
-document.getElementById("pname").value="";
-document.getElementById("pprice").value="";
-document.getElementById("productMessage").textContent="تم حفظ الصنف.";
-}
+
 function renderProductTable(){
-document.getElementById("productTable").innerHTML=products.map(p=>
-`<tr><td>${safe(p.name)}</td><td>${money(p.price)}</td>
-<td><button class="primary" onclick="editProduct(${p.id})">تعديل</button>
-<button class="danger" onclick="deleteProduct(${p.id})">حذف</button></td></tr>`
-).join("");
+  document.getElementById("productTable").innerHTML = products.map(p=>
+    `<tr>
+      <td>${safe(p.name)}</td>
+      <td>${money(p.price)}</td>
+      <td>
+        <button class="primary" onclick="editProduct(${Number(p.id)})">تعديل</button>
+        <button class="danger" onclick="deleteProduct(${Number(p.id)})">حذف</button>
+      </td>
+    </tr>`
+  ).join("");
 }
+
 function editProduct(id){
-const p=products.find(x=>x.id===id);
-if(!p)return;
-const name=prompt("اسم الصنف:",p.name);
-if(name===null)return;
-const priceText=prompt("السعر الجديد:",p.price);
-if(priceText===null)return;
-const price=Number(priceText);
-if(!name.trim()||!Number.isFinite(price)||price<=0){
-alert("الاسم والسعر غير صحيحين.");
-return;
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+
+  const name = prompt("اسم الصنف:",p.name);
+  if(name===null) return;
+
+  const priceText = prompt("السعر الجديد:",p.price);
+  if(priceText===null) return;
+
+  const price = Number(priceText);
+
+  if(!name.trim() || !Number.isFinite(price) || price<=0){
+    alert("الاسم والسعر غير صحيحين.");
+    return;
+  }
+
+  const old = {...p};
+  p.name = name.trim();
+  p.price = price;
+
+  try{
+    saveProducts();
+  }catch(e){
+    Object.assign(p,old);
+    alert("تعذر حفظ التعديل.");
+    return;
+  }
+
+  renderProductTable();
+  renderProducts();
 }
-p.name=name.trim();
-p.price=price;
-saveProducts();
-renderProductTable();
-renderProducts();
-}
+
 function deleteProduct(id){
-if(!confirm("هل تريد حذف هذا الصنف؟"))return;
-products=products.filter(p=>p.id!==id);
-saveProducts();
-renderProductTable();
-renderProducts();
+  if(!confirm("هل تريد حذف هذا الصنف؟")) return;
+
+  const oldProducts = products;
+  products = products.filter(p=>p.id!==id);
+
+  try{
+    saveProducts();
+  }catch(e){
+    products = oldProducts;
+    alert("تعذر حذف الصنف.");
+    return;
+  }
+
+  renderProductTable();
+  renderProducts();
 }
+
+/* وظائف المواد الخام */
+
+function addMaterial(){
+  const name = document.getElementById("mname").value.trim();
+  const unit = document.getElementById("munit").value;
+  const qtyText = document.getElementById("mqty").value;
+  const minText = document.getElementById("mmin").value;
+  const qty = Number(qtyText);
+  const min = Number(minText);
+  const msg = document.getElementById("materialMessage");
+
+  if(!name || qtyText.trim()==="" || minText.trim()==="" ||
+     !Number.isFinite(qty) || qty<0 ||
+     !Number.isFinite(min) || min<0){
+    msg.textContent = "تحقق من الاسم والكميات المدخلة.";
+    return;
+  }
+
+  if(materials.some(m=>m.name.trim().toLowerCase()===name.toLowerCase())){
+    msg.textContent = "هذه المادة مسجلة بالفعل.";
+    return;
+  }
+
+  const material = {
+    id:Date.now(),
+    name,
+    unit,
+    qty,
+    min
+  };
+
+  materials.push(material);
+
+  try{
+    saveMaterials();
+  }catch(e){
+    materials.pop();
+    msg.textContent = "تعذر حفظ المادة.";
+    return;
+  }
+
+  renderMaterials();
+  document.getElementById("mname").value = "";
+  document.getElementById("mqty").value = "0";
+  document.getElementById("mmin").value = "5";
+  msg.textContent = "تم حفظ المادة بنجاح.";
+}
+
+function renderMaterials(){
+  const table = document.getElementById("materialTable");
+  if(!table) return;
+
+  if(!materials.length){
+    table.innerHTML =
+      '<tr><td colspan="5">لم تتم إضافة مواد خام بعد.</td></tr>';
+    return;
+  }
+
+  table.innerHTML = materials.map(m=>{
+    const low = Number(m.qty)<=Number(m.min);
+    return `
+      <tr>
+        <td>${safe(m.name)}</td>
+        <td>${safe(m.unit)}</td>
+        <td class="${low?'low-stock':''}">
+          ${money(m.qty)} ${low?'⚠️':''}
+        </td>
+        <td>${money(m.min)}</td>
+        <td>
+          <button class="primary" onclick="receiveMaterial(${Number(m.id)})">
+            إضافة كمية
+          </button>
+          <button class="danger" onclick="deleteMaterial(${Number(m.id)})">
+            حذف
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function receiveMaterial(id){
+  const material = materials.find(m=>m.id===id);
+  if(!material) return;
+
+  const text = prompt(
+    "أدخل الكمية المضافة من "+material.name+
+    " ("+material.unit+"):"
+  );
+
+  if(text===null) return;
+
+  const qty = Number(text);
+
+  if(!text.trim() || !Number.isFinite(qty) || qty<=0){
+    alert("أدخل كمية صحيحة أكبر من صفر.");
+    return;
+  }
+
+  const oldQty = material.qty;
+  material.qty += qty;
+
+  try{
+    saveMaterials();
+  }catch(e){
+    material.qty = oldQty;
+    alert("تعذر حفظ الكمية المضافة.");
+    return;
+  }
+
+  renderMaterials();
+}
+
+function deleteMaterial(id){
+  const material = materials.find(m=>m.id===id);
+  if(!material) return;
+
+  if(!confirm("هل تريد حذف المادة "+material.name+"؟")) return;
+
+  const oldMaterials = materials;
+  materials = materials.filter(m=>m.id!==id);
+
+  try{
+    saveMaterials();
+  }catch(e){
+    materials = oldMaterials;
+    alert("تعذر حذف المادة.");
+    return;
+  }
+
+  renderMaterials();
+}
+
+/* تقارير المبيعات */
+
 function renderReports(){
-document.getElementById("count").textContent=sales.length;
-document.getElementById("revenue").textContent=money(
-sales.reduce((s,x)=>s+x.total,0));
-document.getElementById("salesList").innerHTML=sales.slice().reverse().map(x=>
-`<div class="panel"><strong>فاتورة ${x.id}</strong><br>
-${safe(x.date)}<br>الإجمالي: ${money(x.total)} ج.س</div>`
-).join("")||"لا توجد مبيعات مسجلة.";
+  document.getElementById("count").textContent = sales.length;
+  document.getElementById("revenue").textContent = money(
+    sales.reduce((s,x)=>s+Number(x.total||0),0)
+  );
+
+  document.getElementById("salesList").innerHTML =
+    sales.slice().reverse().map(x=>`
+      <div class="panel">
+        <strong>فاتورة ${safe(x.id)}</strong><br>
+        ${safe(x.date||"")}<br>
+        الإجمالي: ${money(x.total)} ج.س
+      </div>
+    `).join("") || "لا توجد مبيعات مسجلة.";
 }
+
+/* بدء التطبيق */
 renderProducts();
 renderCart();
 </script>
